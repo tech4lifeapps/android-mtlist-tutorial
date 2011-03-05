@@ -1,7 +1,0 @@
-com.mamlambo.tutorial.tutlist.R
-com.mamlambo.tutorial.tutlist.R$array
-com.mamlambo.tutorial.tutlist.R$attr
-com.mamlambo.tutorial.tutlist.R$drawable
-com.mamlambo.tutorial.tutlist.R$id
-com.mamlambo.tutorial.tutlist.R$layout
-com.mamlambo.tutorial.tutlist.R$string

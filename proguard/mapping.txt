@@ -1,8 +1,0 @@
-com.mamlambo.tutorial.tutlist.TutListActivity -> com.mamlambo.tutorial.tutlist.TutListActivity:
-    void onCreate(android.os.Bundle) -> onCreate
-com.mamlambo.tutorial.tutlist.TutListActivity$1 -> com.mamlambo.tutorial.tutlist.a:
-    com.mamlambo.tutorial.tutlist.TutListActivity this$0 -> a
-    java.lang.String[] val$links -> b
-    void onItemClick(android.widget.AdapterView,android.view.View,int,long) -> onItemClick
-com.mamlambo.tutorial.tutlist.TutView -> com.mamlambo.tutorial.tutlist.TutView:
-    void onCreate(android.os.Bundle) -> onCreate
