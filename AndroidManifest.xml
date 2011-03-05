@@ -23,7 +23,7 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".TutView"
-            android:label="Tutorial" />
+            android:name="TutViewerActivity"
+            android:label="Tutorial Viewer" />
     </application>
 </manifest>

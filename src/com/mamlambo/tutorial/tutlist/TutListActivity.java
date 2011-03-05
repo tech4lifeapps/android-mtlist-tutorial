@@ -56,7 +56,7 @@ public class TutListActivity extends ListActivity {
                     int position, long id) {
                 String content = links[position];
                 Intent showContent = new Intent(getApplicationContext(),
-                        TutView.class);
+                        TutViewerActivity.class);
                 showContent.setData(Uri.parse(content));
                 startActivity(showContent);
             }

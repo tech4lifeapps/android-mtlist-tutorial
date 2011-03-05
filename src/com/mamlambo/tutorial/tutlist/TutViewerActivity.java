@@ -35,7 +35,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.webkit.WebView;
 
-public class TutView extends Activity {
+public class TutViewerActivity extends Activity {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
