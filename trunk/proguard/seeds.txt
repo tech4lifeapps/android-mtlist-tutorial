@@ -1,2 +1,0 @@
-com.mamlambo.tutorial.tutlist.TutView
-com.mamlambo.tutorial.tutlist.TutListActivity
