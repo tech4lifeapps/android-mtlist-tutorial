@@ -33,18 +33,20 @@ package com.mamlambo.tutorial.tutlist;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
-import android.webkit.WebView;
 
 public class TutViewerActivity extends Activity {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.tut_view);
+        setContentView(R.layout.tutview_fragment);
 
         Intent launchingIntent = getIntent();
         String content = launchingIntent.getData().toString();
 
-        WebView viewer = (WebView) findViewById(R.id.tutView);
-        viewer.loadUrl(content);
+        TutViewerFragment viewer = (TutViewerFragment) getFragmentManager()
+                .findFragmentById(R.id.tutview_fragment);
+
+        viewer.updateUrl(content);
     }
+
 }
