@@ -30,36 +30,31 @@
  */
 package com.mamlambo.tutorial.tutlist;
 
-import android.app.ListActivity;
+import android.app.Activity;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
-import android.view.View;
-import android.widget.AdapterView;
-import android.widget.AdapterView.OnItemClickListener;
-import android.widget.ArrayAdapter;
 
-public class TutListActivity extends ListActivity {
+public class TutListActivity extends Activity implements
+        TutListFragment.OnTutSelectedListener {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-        setListAdapter(ArrayAdapter.createFromResource(getApplicationContext(),
-                R.array.tut_titles, R.layout.list_item));
-
-        final String[] links = getResources().getStringArray(R.array.tut_links);
-
-        getListView().setOnItemClickListener(new OnItemClickListener() {
-
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view,
-                    int position, long id) {
-                String content = links[position];
-                Intent showContent = new Intent(getApplicationContext(),
-                        TutViewerActivity.class);
-                showContent.setData(Uri.parse(content));
-                startActivity(showContent);
-            }
-        });
+        setContentView(R.layout.tutlist_fragment);
     }
+
+@Override
+public void onTutSelected(String tutUrl) {
+    TutViewerFragment viewer = (TutViewerFragment) getFragmentManager()
+            .findFragmentById(R.id.tutview_fragment);
+
+    if (viewer == null || !viewer.isInLayout()) {
+        Intent showContent = new Intent(getApplicationContext(),
+                TutViewerActivity.class);
+        showContent.setData(Uri.parse(tutUrl));
+        startActivity(showContent);
+    } else {
+        viewer.updateUrl(tutUrl);
+    }
+}
 }
