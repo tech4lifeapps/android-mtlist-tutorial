@@ -30,11 +30,11 @@
  */
 package com.mamlambo.tutorial.tutlist;
 
-import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.v4.app.FragmentActivity;
 
-public class TutViewerActivity extends Activity {
+public class TutViewerActivity extends FragmentActivity {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -43,7 +43,7 @@ public class TutViewerActivity extends Activity {
         Intent launchingIntent = getIntent();
         String content = launchingIntent.getData().toString();
 
-        TutViewerFragment viewer = (TutViewerFragment) getFragmentManager()
+        TutViewerFragment viewer = (TutViewerFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.tutview_fragment);
 
         viewer.updateUrl(content);
