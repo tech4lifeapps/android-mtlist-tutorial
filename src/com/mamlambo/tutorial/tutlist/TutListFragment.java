@@ -31,29 +31,49 @@
 package com.mamlambo.tutorial.tutlist;
 
 import android.app.Activity;
+import android.database.Cursor;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.ListFragment;
 import android.view.View;
-import android.widget.ArrayAdapter;
+import android.widget.CursorAdapter;
 import android.widget.ListView;
+import android.widget.SimpleCursorAdapter;
+
+import com.mamlambo.tutorial.tutlist.data.TutListDatabase;
+import com.mamlambo.tutorial.tutlist.data.TutListProvider;
 
 public class TutListFragment extends ListFragment {
     private OnTutSelectedListener tutSelectedListener;
 
     @Override
     public void onListItemClick(ListView l, View v, int position, long id) {
-        String[] links = getResources().getStringArray(R.array.tut_links);
-
-        String content = links[position];
-        tutSelectedListener.onTutSelected(content);
+        String projection[] = { TutListDatabase.COL_URL };
+        Cursor tutorialCursor = getActivity().getContentResolver().query(
+                Uri.withAppendedPath(TutListProvider.CONTENT_URI,
+                        String.valueOf(id)), projection, null, null, null);
+        if (tutorialCursor.moveToFirst()) {
+            String tutorialUrl = tutorialCursor.getString(0);
+            tutSelectedListener.onTutSelected(tutorialUrl);
+        }
+        tutorialCursor.close();
     }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setListAdapter(ArrayAdapter.createFromResource(getActivity()
-                .getApplicationContext(), R.array.tut_titles,
-                R.layout.list_item));
+        String[] projection = { TutListDatabase.ID, TutListDatabase.COL_TITLE };
+        String[] uiBindFrom = { TutListDatabase.COL_TITLE };
+        int[] uiBindTo = { R.id.title };
+
+        Cursor tutorials = getActivity().managedQuery(
+                TutListProvider.CONTENT_URI, projection, null, null, null);
+
+        CursorAdapter adapter = new SimpleCursorAdapter(getActivity()
+                .getApplicationContext(), R.layout.list_item, tutorials,
+                uiBindFrom, uiBindTo);
+
+        setListAdapter(adapter);
     }
 
     public interface OnTutSelectedListener {
