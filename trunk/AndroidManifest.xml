@@ -2,8 +2,8 @@
 <manifest
     xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.mamlambo.tutorial.tutlist"
-    android:versionCode="3"
-    android:versionName="1.2.22"
+    android:versionCode="4"
+    android:versionName="1.2.31"
     android:installLocation="auto">
     <uses-sdk
         android:minSdkVersion="4"
@@ -26,5 +26,9 @@
         <activity
             android:name="TutViewerActivity"
             android:label="Tutorial Viewer" />
+        <provider
+            android:authorities="com.mamlambo.tutorial.tutlist.data.TutListProvider"
+            android:multiprocess="true"
+            android:name="com.mamlambo.tutorial.tutlist.data.TutListProvider"></provider>
     </application>
 </manifest>
