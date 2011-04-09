@@ -45,6 +45,19 @@ public class TutListProvider extends ContentProvider {
     @Override
     public Cursor query(Uri uri, String[] projection, String selection,
             String[] selectionArgs, String sortOrder) {
+        /*
+         * Challenge solution from the Loaders quick tutorial.
+         * try {
+         * // The first time the data is loaded, this 10 second pause will take
+         * // place. Subsequent orientations changes
+         * // will remain instant, proving that the data is not be queried
+         * again.
+         * Thread.sleep(10000);
+         * } catch (InterruptedException e) {
+         * // TODO Auto-generated catch block
+         * e.printStackTrace();
+         * }
+         */
         SQLiteQueryBuilder queryBuilder = new SQLiteQueryBuilder();
         queryBuilder.setTables(TutListDatabase.TABLE_TUTORIALS);
 
