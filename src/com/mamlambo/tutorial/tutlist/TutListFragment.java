@@ -35,16 +35,23 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.ListFragment;
+import android.support.v4.app.LoaderManager;
+import android.support.v4.content.CursorLoader;
+import android.support.v4.content.Loader;
+import android.support.v4.widget.CursorAdapter;
+import android.support.v4.widget.SimpleCursorAdapter;
 import android.view.View;
-import android.widget.CursorAdapter;
 import android.widget.ListView;
-import android.widget.SimpleCursorAdapter;
 
 import com.mamlambo.tutorial.tutlist.data.TutListDatabase;
 import com.mamlambo.tutorial.tutlist.data.TutListProvider;
 
-public class TutListFragment extends ListFragment {
+public class TutListFragment extends ListFragment implements
+        LoaderManager.LoaderCallbacks<Cursor> {
     private OnTutSelectedListener tutSelectedListener;
+    private static final int TUTORIAL_LIST_LOADER = 0x01;
+
+    private SimpleCursorAdapter adapter;
 
     @Override
     public void onListItemClick(ListView l, View v, int position, long id) {
@@ -62,16 +69,16 @@ public class TutListFragment extends ListFragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        String[] projection = { TutListDatabase.ID, TutListDatabase.COL_TITLE };
+
         String[] uiBindFrom = { TutListDatabase.COL_TITLE };
         int[] uiBindTo = { R.id.title };
 
-        Cursor tutorials = getActivity().managedQuery(
-                TutListProvider.CONTENT_URI, projection, null, null, null);
+        getLoaderManager().initLoader(TUTORIAL_LIST_LOADER, null, this);
 
-        CursorAdapter adapter = new SimpleCursorAdapter(getActivity()
-                .getApplicationContext(), R.layout.list_item, tutorials,
-                uiBindFrom, uiBindTo);
+        adapter = new SimpleCursorAdapter(
+                getActivity().getApplicationContext(), R.layout.list_item,
+                null, uiBindFrom, uiBindTo,
+                CursorAdapter.FLAG_REGISTER_CONTENT_OBSERVER);
 
         setListAdapter(adapter);
     }
@@ -89,5 +96,26 @@ public class TutListFragment extends ListFragment {
             throw new ClassCastException(activity.toString()
                     + " must implement OnTutSelectedListener");
         }
+    }
+
+    // LoaderManager.LoaderCallbacks<Cursor> methods
+
+    @Override
+    public Loader<Cursor> onCreateLoader(int id, Bundle args) {
+        String[] projection = { TutListDatabase.ID, TutListDatabase.COL_TITLE };
+
+        CursorLoader cursorLoader = new CursorLoader(getActivity(),
+                TutListProvider.CONTENT_URI, projection, null, null, null);
+        return cursorLoader;
+    }
+
+    @Override
+    public void onLoadFinished(Loader<Cursor> loader, Cursor cursor) {
+        adapter.swapCursor(cursor);
+    }
+
+    @Override
+    public void onLoaderReset(Loader<Cursor> loader) {
+        adapter.swapCursor(null);
     }
 }
