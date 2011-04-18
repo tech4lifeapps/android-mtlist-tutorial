@@ -31,6 +31,7 @@
 package com.mamlambo.tutorial.tutlist;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
@@ -40,11 +41,15 @@ import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
 import android.support.v4.widget.CursorAdapter;
 import android.support.v4.widget.SimpleCursorAdapter;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.ListView;
 
 import com.mamlambo.tutorial.tutlist.data.TutListDatabase;
 import com.mamlambo.tutorial.tutlist.data.TutListProvider;
+import com.mamlambo.tutorial.tutlist.service.TutListDownloaderService;
 
 public class TutListFragment extends ListFragment implements
         LoaderManager.LoaderCallbacks<Cursor> {
@@ -81,6 +86,7 @@ public class TutListFragment extends ListFragment implements
                 CursorAdapter.FLAG_REGISTER_CONTENT_OBSERVER);
 
         setListAdapter(adapter);
+        setHasOptionsMenu(true);
     }
 
     public interface OnTutSelectedListener {
@@ -96,6 +102,30 @@ public class TutListFragment extends ListFragment implements
             throw new ClassCastException(activity.toString()
                     + " must implement OnTutSelectedListener");
         }
+    }
+
+    // options menu
+
+    private int refreshMenuId;
+
+    @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        Intent intent = new Intent(getActivity().getApplicationContext(),
+                TutListDownloaderService.class);
+        intent.setData(Uri
+                .parse("http://feeds.feedburner.com/MobileTuts?format=xml"));
+        inflater.inflate(R.menu.options_menu, menu);
+        MenuItem refresh = menu.findItem(R.id.refresh_option_item);
+        refresh.setIntent(intent);
+        refreshMenuId = refresh.getItemId();
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        if (item.getItemId() == refreshMenuId) {
+            getActivity().startService(item.getIntent());
+        }
+        return true;
     }
 
     // LoaderManager.LoaderCallbacks<Cursor> methods
