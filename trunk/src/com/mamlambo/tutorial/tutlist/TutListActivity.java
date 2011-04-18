@@ -37,24 +37,25 @@ import android.support.v4.app.FragmentActivity;
 
 public class TutListActivity extends FragmentActivity implements
         TutListFragment.OnTutSelectedListener {
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.tutlist_fragment);
     }
 
-@Override
-public void onTutSelected(String tutUrl) {
-    TutViewerFragment viewer = (TutViewerFragment) getSupportFragmentManager()
-            .findFragmentById(R.id.tutview_fragment);
+    @Override
+    public void onTutSelected(String tutUrl) {
+        TutViewerFragment viewer = (TutViewerFragment) getSupportFragmentManager()
+                .findFragmentById(R.id.tutview_fragment);
 
-    if (viewer == null || !viewer.isInLayout()) {
-        Intent showContent = new Intent(getApplicationContext(),
-                TutViewerActivity.class);
-        showContent.setData(Uri.parse(tutUrl));
-        startActivity(showContent);
-    } else {
-        viewer.updateUrl(tutUrl);
+        if (viewer == null || !viewer.isInLayout()) {
+            Intent showContent = new Intent(getApplicationContext(),
+                    TutViewerActivity.class);
+            showContent.setData(Uri.parse(tutUrl));
+            startActivity(showContent);
+        } else {
+            viewer.updateUrl(tutUrl);
+        }
     }
-}
 }
