@@ -30,7 +30,13 @@
  */
 package com.mamlambo.tutorial.tutlist;
 
+import java.util.Calendar;
+import java.util.TimeZone;
+
 import android.app.Activity;
+import android.app.AlarmManager;
+import android.app.PendingIntent;
+import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
@@ -49,6 +55,7 @@ import android.widget.ListView;
 
 import com.mamlambo.tutorial.tutlist.data.TutListDatabase;
 import com.mamlambo.tutorial.tutlist.data.TutListProvider;
+import com.mamlambo.tutorial.tutlist.receiver.AlarmReceiver;
 import com.mamlambo.tutorial.tutlist.service.TutListDownloaderService;
 
 public class TutListFragment extends ListFragment implements
@@ -124,8 +131,31 @@ public class TutListFragment extends ListFragment implements
     public boolean onOptionsItemSelected(MenuItem item) {
         if (item.getItemId() == refreshMenuId) {
             getActivity().startService(item.getIntent());
+
+            // also set alarm
+            Context context = getActivity().getApplicationContext();
+            setRecurringAlarm(context);
         }
         return true;
+    }
+
+    private void setRecurringAlarm(Context context) {
+
+        // we know mobiletuts updates at right around 1130 GMT.
+        // let's grab new stuff at around 11:45 GMT, inexactly
+        Calendar updateTime = Calendar.getInstance();
+        updateTime.setTimeZone(TimeZone.getTimeZone("GMT"));
+        updateTime.set(Calendar.HOUR_OF_DAY, 11);
+        updateTime.set(Calendar.MINUTE, 45);
+
+        Intent downloader = new Intent(context, AlarmReceiver.class);
+        PendingIntent recurringDownload = PendingIntent.getBroadcast(context,
+                0, downloader, PendingIntent.FLAG_CANCEL_CURRENT);
+        AlarmManager alarms = (AlarmManager) getActivity().getSystemService(
+                Context.ALARM_SERVICE);
+        alarms.setInexactRepeating(AlarmManager.RTC_WAKEUP,
+                updateTime.getTimeInMillis(), AlarmManager.INTERVAL_DAY,
+                recurringDownload);
     }
 
     // LoaderManager.LoaderCallbacks<Cursor> methods
