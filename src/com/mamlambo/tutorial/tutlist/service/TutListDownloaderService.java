@@ -139,14 +139,22 @@ public class TutListDownloaderService extends Service {
                     }
                     eventType = tutorials.next();
                 }
-
+                // no exceptions during parsing
+                succeeded = true;
             } catch (XmlPullParserException e) {
-                e.printStackTrace();
+                Log.e(DEBUG_TAG, "Error during parsing", e);
             } catch (IOException e) {
-                e.printStackTrace();
+                Log.e(DEBUG_TAG, "IO Error during parsing", e);
             }
 
             return succeeded;
+        }
+
+        @Override
+        protected void onPostExecute(Boolean result) {
+            if (!result) {
+                Log.w(DEBUG_TAG, "XML download and parse had errors");
+            }
         }
 
     }
