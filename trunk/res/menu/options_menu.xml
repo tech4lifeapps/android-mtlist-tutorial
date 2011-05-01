@@ -4,5 +4,9 @@
     <item
         android:id="@+id/refresh_option_item"
         android:icon="@drawable/ic_menu_refresh"
-        android:title="Refresh"></item>
+        android:title="@string/refresh"></item>
+    <item
+        android:id="@+id/settings_option_item"
+        android:icon="@drawable/ic_menu_preferences"
+        android:title="@string/settings"></item>
 </menu>
