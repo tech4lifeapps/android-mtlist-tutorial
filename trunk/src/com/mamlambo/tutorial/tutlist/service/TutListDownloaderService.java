@@ -38,13 +38,19 @@ import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;
 import org.xmlpull.v1.XmlPullParserFactory;
 
+import android.app.Notification;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.app.Service;
 import android.content.ContentValues;
+import android.content.Context;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.IBinder;
 import android.util.Log;
 
+import com.mamlambo.tutorial.tutlist.R;
+import com.mamlambo.tutorial.tutlist.TutListActivity;
 import com.mamlambo.tutorial.tutlist.data.TutListDatabase;
 import com.mamlambo.tutorial.tutlist.data.TutListProvider;
 
@@ -52,6 +58,8 @@ public class TutListDownloaderService extends Service {
 
     private static final String DEBUG_TAG = "TutListDownloaderService";
     private DownloaderTask tutorialDownloader;
+
+    private static final int LIST_UPDATE_NOTIFICATION = 100;
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
@@ -111,25 +119,25 @@ public class TutListDownloaderService extends Service {
                                 if (eventType == XmlPullParser.START_TAG) {
                                     if (tutorials.getName().equals("link")) {
                                         tutorials.next();
-                                        Log.d(DEBUG_TAG,
-                                                "Link: " + tutorials.getText());
+                                        Log.d(DEBUG_TAG, "Link: "
+                                            + tutorials.getText());
                                         tutorialData.put(
-                                                TutListDatabase.COL_URL,
-                                                tutorials.getText());
+                                            TutListDatabase.COL_URL, tutorials
+                                                .getText());
                                     } else if (tutorials.getName().equals(
-                                            "title")) {
+                                        "title")) {
                                         tutorials.next();
                                         tutorialData.put(
-                                                TutListDatabase.COL_TITLE,
-                                                tutorials.getText());
+                                            TutListDatabase.COL_TITLE,
+                                            tutorials.getText());
                                     }
                                 } else if (eventType == XmlPullParser.END_TAG) {
                                     if (tutorials.getName().equals("item")) {
                                         // save the data, and then continue with
                                         // the outer loop
                                         getContentResolver().insert(
-                                                TutListProvider.CONTENT_URI,
-                                                tutorialData);
+                                            TutListProvider.CONTENT_URI,
+                                            tutorialData);
                                         break;
                                     }
                                 }
@@ -152,11 +160,40 @@ public class TutListDownloaderService extends Service {
 
         @Override
         protected void onPostExecute(Boolean result) {
+            Context context = TutListDownloaderService.this
+                .getApplicationContext();
+            NotificationManager notificationManager = (NotificationManager) context
+                .getSystemService(NOTIFICATION_SERVICE);
+
+            Notification updateComplete = new Notification();
+            updateComplete.icon = android.R.drawable.stat_notify_sync;
+            updateComplete.tickerText = context
+                .getText(R.string.notification_title);
+            updateComplete.when = System.currentTimeMillis();
+
+            Intent notificationIntent = new Intent(context,
+                TutListActivity.class);
+            PendingIntent contentIntent = PendingIntent.getActivity(context, 0,
+                notificationIntent, 0);
+
+            String contentTitle = context.getText(R.string.notification_title)
+                .toString();
+
+            String contentText;
             if (!result) {
                 Log.w(DEBUG_TAG, "XML download and parse had errors");
+                contentText = context.getText(R.string.notification_info_fail)
+                    .toString();
+            } else {
+                contentText = context.getText(
+                    R.string.notification_info_success).toString();
             }
-        }
+            updateComplete.setLatestEventInfo(context, contentTitle,
+                contentText, contentIntent);
 
+            notificationManager
+                .notify(LIST_UPDATE_NOTIFICATION, updateComplete);
+        }
     }
 
 }

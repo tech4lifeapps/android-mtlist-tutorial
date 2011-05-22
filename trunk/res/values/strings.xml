@@ -14,4 +14,12 @@
         name="settings">Settings</string>
     <string
         name="refresh">Refresh</string>
+    <string
+        name="notification_bar_text">TutList Updated</string>
+    <string
+        name="notification_title">@string/notification_bar_text</string>
+    <string
+        name="notification_info_success">Tap to launch app</string>
+    <string
+        name="notification_info_fail">Updating failed</string>
 </resources>
