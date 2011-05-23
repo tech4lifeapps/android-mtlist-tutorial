@@ -69,6 +69,7 @@ public class TutListFragment extends ListFragment implements
             tutSelectedListener.onTutSelected(tutorialUrl);
         }
         tutorialCursor.close();
+        l.setItemChecked(position, true);
     }
 
     @Override
@@ -91,6 +92,13 @@ public class TutListFragment extends ListFragment implements
 
     public interface OnTutSelectedListener {
         public void onTutSelected(String tutUrl);
+    }
+
+    @Override
+    public void onActivityCreated(Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
+
+        getListView().setChoiceMode(ListView.CHOICE_MODE_SINGLE);
     }
 
     @Override
