@@ -22,4 +22,6 @@
         name="notification_info_success">Tap to launch app</string>
     <string
         name="notification_info_fail">Updating failed</string>
+    <string
+        name="background_updating">Background Updating</string>
 </resources>
