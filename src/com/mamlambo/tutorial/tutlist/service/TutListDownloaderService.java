@@ -33,6 +33,10 @@ package com.mamlambo.tutorial.tutlist.service;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;
@@ -65,9 +69,12 @@ public class TutListDownloaderService extends Service {
     public int onStartCommand(Intent intent, int flags, int startId) {
         URL tutorialPath;
         try {
-            tutorialPath = new URL(intent.getDataString());
-            tutorialDownloader = new DownloaderTask();
-            tutorialDownloader.execute(tutorialPath);
+            String url = intent.getDataString();
+            if (url != null && (url.length() > 0)) {
+                tutorialPath = new URL(url);
+                tutorialDownloader = new DownloaderTask();
+                tutorialDownloader.execute(tutorialPath);
+            }
         } catch (MalformedURLException e) {
             Log.e(DEBUG_TAG, "Bad URL", e);
         }
@@ -130,6 +137,17 @@ public class TutListDownloaderService extends Service {
                                         tutorialData.put(
                                             TutListDatabase.COL_TITLE,
                                             tutorials.getText());
+                                    } else if (tutorials.getName().equals("pubDate")) {
+                                        tutorials.next();
+                                        DateFormat parser = new SimpleDateFormat("E, dd MMM yyyy");
+                                        try {
+                                            Date date = parser.parse(tutorials.getText());
+                                            tutorialData.put(TutListDatabase.COL_DATE, 
+                                                    date.getTime() / 1000);
+                                        } catch (ParseException e) {
+                                            Log.e(DEBUG_TAG, "Error parsing date: " 
+                                                    + tutorials.getText());
+                                        }
                                     }
                                 } else if (eventType == XmlPullParser.END_TAG) {
                                     if (tutorials.getName().equals("item")) {
@@ -193,6 +211,9 @@ public class TutListDownloaderService extends Service {
 
             notificationManager
                 .notify(LIST_UPDATE_NOTIFICATION, updateComplete);
+            
+            // all done
+            stopSelf();
         }
     }
 

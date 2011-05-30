@@ -36,6 +36,7 @@ import android.content.Intent;
 import android.net.Uri;
 import android.util.Log;
 
+import com.mamlambo.tutorial.tutlist.R;
 import com.mamlambo.tutorial.tutlist.service.TutListDownloaderService;
 
 public class AlarmReceiver extends BroadcastReceiver {
@@ -48,7 +49,7 @@ public class AlarmReceiver extends BroadcastReceiver {
         // start the download
         Intent downloader = new Intent(context, TutListDownloaderService.class);
         downloader.setData(Uri
-                .parse("http://feeds.feedburner.com/MobileTuts?format=xml"));
+                .parse(context.getString(R.string.default_url)));
         context.startService(downloader);
     }
 
