@@ -37,18 +37,21 @@ import android.util.Log;
 
 public class TutListDatabase extends SQLiteOpenHelper {
     private static final String DEBUG_TAG = "TutListDatabase";
-    private static final int DB_VERSION = 2;
+    private static final int DB_VERSION = 3;
     private static final String DB_NAME = "tutorial_data";
 
     public static final String TABLE_TUTORIALS = "tutorials";
     public static final String ID = "_id";
     public static final String COL_TITLE = "title";
     public static final String COL_URL = "url";
+    public static final String COL_DATE = "tut_date";
 
     private static final String CREATE_TABLE_TUTORIALS = "CREATE TABLE "
             + TABLE_TUTORIALS + " (" + ID
-            + " integer PRIMARY KEY AUTOINCREMENT, " + COL_TITLE
-            + " text NOT NULL, " + COL_URL + " text UNIQUE NOT NULL);";
+            + " INTEGER PRIMARY KEY AUTOINCREMENT, " + COL_TITLE
+            + " TEXT NOT NULL, " + COL_URL + " text UNIQUE NOT NULL, "
+            + COL_DATE + " INTEGER NOT NULL DEFAULT (strftime('%s','now'))"
+            + ");";
 
     private static final String DB_SCHEMA = CREATE_TABLE_TUTORIALS;
 
@@ -64,10 +67,18 @@ public class TutListDatabase extends SQLiteOpenHelper {
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-        Log.w(DEBUG_TAG, "Upgrading database. Existing contents will be lost. ["
-                + oldVersion + "]->[" + newVersion + "]");
-        db.execSQL("DROP TABLE IF EXISTS " + TABLE_TUTORIALS);
-        onCreate(db);
+        if (oldVersion == 2 && newVersion == 3) {
+            // keep the data that's there, add the two new columns
+            
+            // sqlite has restrictions on add column -- no expressions or current time values, this value is mid february 2011
+            db.execSQL("alter table "+ TABLE_TUTORIALS + " add column " + COL_DATE + " INTEGER NOT NULL DEFAULT '1297728000' ");
+        
+        } else {
+            Log.w(DEBUG_TAG, "Upgrading database. Existing contents will be lost. ["
+                    + oldVersion + "]->[" + newVersion + "]");
+            db.execSQL("DROP TABLE IF EXISTS " + TABLE_TUTORIALS);
+            onCreate(db);
+        }
     }
 
     /**
@@ -77,15 +88,15 @@ public class TutListDatabase extends SQLiteOpenHelper {
      *            The open database
      */
     private void seedData(SQLiteDatabase db) {
-        db.execSQL("insert into tutorials (title, url) values ('Best of Tuts+ in February 2011', 'http://mobile.tutsplus.com/articles/news/best-of-tuts-in-february-2011/');");
-        db.execSQL("insert into tutorials (title, url) values ('Design & Build a 1980s iOS Phone App: Design Comp Slicing', 'http://mobile.tutsplus.com/tutorials/mobile-design-tutorials/80s-phone-app-slicing/');");
-        db.execSQL("insert into tutorials (title, url) values ('Create a Brick Breaker Game with the Corona SDK: Game Controls', 'http://mobile.tutsplus.com/tutorials/corona/create-a-brick-breaker-game-with-the-corona-sdk-game-controls/');");
-        db.execSQL("insert into tutorials (title, url) values ('Exporting Graphics for Mobile Apps: PNG or JPEG?', 'http://mobile.tutsplus.com/tutorials/mobile-design-tutorials/mobile-design_png-or-jpg/');");
-        db.execSQL("insert into tutorials (title, url) values ('Android Tablet Design', 'http://mobile.tutsplus.com/tutorials/android/android-tablet-design/');");
-        db.execSQL("insert into tutorials (title, url) values ('Build a Titanium Mobile Pizza Ordering App: Order Form Setup', 'http://mobile.tutsplus.com/tutorials/appcelerator/build-a-titanium-mobile-pizza-ordering-app-order-form-setup/');");
-        db.execSQL("insert into tutorials (title, url) values ('Create a Brick Breaker Game with the Corona SDK: Application Setup', 'http://mobile.tutsplus.com/tutorials/corona/corona-sdk_brick-breaker/');");
-        db.execSQL("insert into tutorials (title, url) values ('Android Tablet Virtual Device Configurations', 'http://mobile.tutsplus.com/tutorials/android/android-sdk_tablet_virtual-device-configuration/');");
-        db.execSQL("insert into tutorials (title, url) values ('Build a Titanium Mobile Pizza Ordering App: Topping Selection', 'http://mobile.tutsplus.com/tutorials/appcelerator/pizza-ordering-app-part-2/');");
-        db.execSQL("insert into tutorials (title, url) values ('Design & Build a 1980s iOS Phone App: Interface Builder Setup', 'http://mobile.tutsplus.com/tutorials/iphone/1980s-phone-app_interface-builder-setup/');");
+        db.execSQL("insert into tutorials (title, url, tut_date) values ('Best of Tuts+ in February 2011', 'http://mobile.tutsplus.com/articles/news/best-of-tuts-in-february-2011/', (strftime('%s', '2011-02-01')));");
+        db.execSQL("insert into tutorials (title, url, tut_date) values ('Design & Build a 1980s iOS Phone App: Design Comp Slicing', 'http://mobile.tutsplus.com/tutorials/mobile-design-tutorials/80s-phone-app-slicing/', (strftime('%s', '2011-02-01')));");
+        db.execSQL("insert into tutorials (title, url, tut_date) values ('Create a Brick Breaker Game with the Corona SDK: Game Controls', 'http://mobile.tutsplus.com/tutorials/corona/create-a-brick-breaker-game-with-the-corona-sdk-game-controls/', (strftime('%s', '2011-02-01')));");
+        db.execSQL("insert into tutorials (title, url, tut_date) values ('Exporting Graphics for Mobile Apps: PNG or JPEG?', 'http://mobile.tutsplus.com/tutorials/mobile-design-tutorials/mobile-design_png-or-jpg/', (strftime('%s', '2011-02-01')));");
+        db.execSQL("insert into tutorials (title, url, tut_date) values ('Android Tablet Design', 'http://mobile.tutsplus.com/tutorials/android/android-tablet-design/', (strftime('%s', '2011-02-01')));");
+        db.execSQL("insert into tutorials (title, url, tut_date) values ('Build a Titanium Mobile Pizza Ordering App: Order Form Setup', 'http://mobile.tutsplus.com/tutorials/appcelerator/build-a-titanium-mobile-pizza-ordering-app-order-form-setup/', (strftime('%s', '2011-02-01')));");
+        db.execSQL("insert into tutorials (title, url, tut_date) values ('Create a Brick Breaker Game with the Corona SDK: Application Setup', 'http://mobile.tutsplus.com/tutorials/corona/corona-sdk_brick-breaker/', (strftime('%s', '2011-02-01')));");
+        db.execSQL("insert into tutorials (title, url, tut_date) values ('Android Tablet Virtual Device Configurations', 'http://mobile.tutsplus.com/tutorials/android/android-sdk_tablet_virtual-device-configuration/', (strftime('%s', '2011-02-01')));");
+        db.execSQL("insert into tutorials (title, url, tut_date) values ('Build a Titanium Mobile Pizza Ordering App: Topping Selection', 'http://mobile.tutsplus.com/tutorials/appcelerator/pizza-ordering-app-part-2/', (strftime('%s', '2011-02-01')));");
+        db.execSQL("insert into tutorials (title, url, tut_date) values ('Design & Build a 1980s iOS Phone App: Interface Builder Setup', 'http://mobile.tutsplus.com/tutorials/iphone/1980s-phone-app_interface-builder-setup/', (strftime('%s', '2011-02-01')));");
     }
 }
