@@ -31,6 +31,7 @@
 package com.mamlambo.tutorial.tutlist;
 
 import android.content.Intent;
+import android.content.res.Configuration;
 import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
 
@@ -38,6 +39,13 @@ public class TutViewerActivity extends FragmentActivity {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        
+        // this activity not used in landscape mode
+        if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE) {
+            finish();
+            return;
+        }
+        
         setContentView(R.layout.tutview_fragment);
 
         Intent launchingIntent = getIntent();

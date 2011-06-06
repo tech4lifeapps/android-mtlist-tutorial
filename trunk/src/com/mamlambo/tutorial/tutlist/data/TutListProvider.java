@@ -34,6 +34,7 @@ import android.content.ContentProvider;
 import android.content.ContentResolver;
 import android.content.ContentUris;
 import android.content.ContentValues;
+import android.content.Context;
 import android.content.UriMatcher;
 import android.database.Cursor;
 import android.database.SQLException;
@@ -192,9 +193,43 @@ public class TutListProvider extends ContentProvider {
                     values, selection, selectionArgs);
             break;
         default:
-            throw new IllegalArgumentException("Unknown URI");
+            throw new IllegalArgumentException("Unknown or Invalid URI");
         }
         getContext().getContentResolver().notifyChange(uri, null);
         return rowsAffected;
     }
+
+    /**
+     * Helper to mark all items (tutorials) in the table as read
+     * 
+     * @param context
+     *            A valid context
+     */
+    public static void markAllItemsRead(Context context) {
+        ContentValues values = new ContentValues();
+        values.put(TutListDatabase.COL_READ, "1");
+        int updated = context.getContentResolver().update(CONTENT_URI, values,
+                TutListDatabase.COL_READ + "='0'", null);
+        Log.d(DEBUG_TAG, "Rows updated: " + updated);
+    }
+
+    /**
+     * Marks a single item, referenced by Uri, as read
+     * 
+     * @param context
+     *            A valid context
+     * @param item
+     *            An individual item
+     */
+    public static void markItemRead(Context context, long item) {
+        Uri viewedTut = Uri.withAppendedPath(TutListProvider.CONTENT_URI,
+                String.valueOf(item));
+        ContentValues values = new ContentValues();
+        values.put(TutListDatabase.COL_READ, "1");
+        int updated = context.getContentResolver().update(viewedTut, values,
+                null, null);
+        Log.d(DEBUG_TAG, updated + " rows updated. Marked " + item
+                + " as read.");
+    }
+
 }

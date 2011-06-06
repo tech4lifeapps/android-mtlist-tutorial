@@ -15,6 +15,8 @@
     <string
         name="refresh">Refresh</string>
     <string
+        name="mark_all_read">Mark All Read</string>
+    <string
         name="notification_bar_text">TutList Updated</string>
     <string
         name="notification_title">@string/notification_bar_text</string>
@@ -24,4 +26,14 @@
         name="notification_info_fail">Updating failed</string>
     <string
         name="background_updating">Background Updating</string>
+    <string
+        name="display_prefs">Display Preferences</string>
+    <string
+        name="pref_title_only_unread">Show Unread Only</string>
+    <string
+        name="pref_summary_only_unread">Only display unread items in the list</string>
+    <string
+        name="pref_key_only_unread">only_unread_flag</string>
+    <string
+        name="empty_list_label">You have no tutorials to read!</string>
 </resources>

@@ -37,21 +37,32 @@ import android.util.Log;
 
 public class TutListDatabase extends SQLiteOpenHelper {
     private static final String DEBUG_TAG = "TutListDatabase";
-    private static final int DB_VERSION = 3;
+    private static final int DB_VERSION = 4;
     private static final String DB_NAME = "tutorial_data";
 
     public static final String TABLE_TUTORIALS = "tutorials";
     public static final String ID = "_id";
     public static final String COL_TITLE = "title";
     public static final String COL_URL = "url";
+
     public static final String COL_DATE = "tut_date";
+    // sqlite has restrictions on add column -- no expressions or
+    // current time values, this value is mid february 2011
+    private static final String ALTER_ADD_COL_DATE = "ALTER TABLE "
+            + TABLE_TUTORIALS + " ADD COLUMN " + COL_DATE
+            + " INTEGER NOT NULL DEFAULT '1297728000' ";
+
+    public static final String COL_READ = "read";
+    private static final String ALTER_ADD_COL_READ = "ALTER TABLE "
+            + TABLE_TUTORIALS + " ADD COLUMN " + COL_READ
+            + " INTEGER NOT NULL DEFAULT 0";
 
     private static final String CREATE_TABLE_TUTORIALS = "CREATE TABLE "
             + TABLE_TUTORIALS + " (" + ID
-            + " INTEGER PRIMARY KEY AUTOINCREMENT, " + COL_TITLE
-            + " TEXT NOT NULL, " + COL_URL + " text UNIQUE NOT NULL, "
-            + COL_DATE + " INTEGER NOT NULL DEFAULT (strftime('%s','now'))"
-            + ");";
+            + " integer PRIMARY KEY AUTOINCREMENT, " + COL_TITLE
+            + " text NOT NULL, " + COL_URL + " text UNIQUE NOT NULL, "
+            + COL_DATE + " INTEGER NOT NULL DEFAULT (strftime('%s','now')), "
+            + COL_READ + " INTEGER NOT NULL default 0" + ");";
 
     private static final String DB_SCHEMA = CREATE_TABLE_TUTORIALS;
 
@@ -67,15 +78,18 @@ public class TutListDatabase extends SQLiteOpenHelper {
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-        if (oldVersion == 2 && newVersion == 3) {
-            // keep the data that's there, add the two new columns
-            
-            // sqlite has restrictions on add column -- no expressions or current time values, this value is mid february 2011
-            db.execSQL("alter table "+ TABLE_TUTORIALS + " add column " + COL_DATE + " INTEGER NOT NULL DEFAULT '1297728000' ");
-        
+        if (newVersion == 4) {
+            // do our best to keep the date, using alter tables
+            if (oldVersion == 3) {
+                db.execSQL(ALTER_ADD_COL_READ);
+            } else if (oldVersion == 2) {
+                db.execSQL(ALTER_ADD_COL_DATE);
+                db.execSQL(ALTER_ADD_COL_READ);
+            }
         } else {
-            Log.w(DEBUG_TAG, "Upgrading database. Existing contents will be lost. ["
-                    + oldVersion + "]->[" + newVersion + "]");
+            Log.w(DEBUG_TAG,
+                    "Upgrading database. Existing contents will be lost. ["
+                            + oldVersion + "]->[" + newVersion + "]");
             db.execSQL("DROP TABLE IF EXISTS " + TABLE_TUTORIALS);
             onCreate(db);
         }

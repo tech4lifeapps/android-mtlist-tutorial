@@ -36,6 +36,7 @@ import java.util.Date;
 import android.app.Activity;
 import android.content.Intent;
 import android.database.Cursor;
+import android.graphics.Typeface;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.ListFragment;
@@ -54,40 +55,75 @@ import android.widget.TextView;
 
 import com.mamlambo.tutorial.tutlist.data.TutListDatabase;
 import com.mamlambo.tutorial.tutlist.data.TutListProvider;
+import com.mamlambo.tutorial.tutlist.data.TutListSharedPrefs;
 import com.mamlambo.tutorial.tutlist.service.TutListDownloaderService;
 
 public class TutListFragment extends ListFragment implements
         LoaderManager.LoaderCallbacks<Cursor> {
-    private static final String DEBUG_TAG = "TutListFragment";
+    private static final String LAST_POSITION_KEY = "lastPosition";
+    private static final String LAST_ITEM_CLICKED_KEY = "lastItemClicked";
+    private static final String CUR_TUT_URL_KEY = "curTutUrl";
+
+    public static final String DEBUG_TAG = "TutListFragment";
 
     private OnTutSelectedListener tutSelectedListener;
     private static final int TUTORIAL_LIST_LOADER = 0x01;
 
     private SimpleCursorAdapter adapter;
 
+    private long lastItemClicked = -1;
+    private String curTutUrl = null;
+    private int selectedPosition = -1;
+
     @Override
     public void onListItemClick(ListView l, View v, int position, long id) {
+        if (position == selectedPosition) {
+            // not changing selection, do nothing
+            return;
+        }
+
+        // get Url
         String projection[] = { TutListDatabase.COL_URL };
         Uri viewedTut = Uri.withAppendedPath(TutListProvider.CONTENT_URI,
                 String.valueOf(id));
         Cursor tutorialCursor = getActivity().getContentResolver().query(
                 viewedTut, projection, null, null, null);
         if (tutorialCursor.moveToFirst()) {
-            String tutorialUrl = tutorialCursor.getString(0);
-            tutSelectedListener.onTutSelected(tutorialUrl);
+            curTutUrl = tutorialCursor.getString(0);
+            tutSelectedListener.onTutSelected(curTutUrl);
         }
         tutorialCursor.close();
+
+        // mark the last item as read
+        if (lastItemClicked != -1) {
+            TutListProvider.markItemRead(getActivity().getApplicationContext(),
+                    lastItemClicked);
+            Log.d(DEBUG_TAG, "Marking " + lastItemClicked
+                    + " as read. Now showing " + id + ".");
+        }
+        lastItemClicked = id;
+
+        // v11+ highlights
+        selectedPosition = position;
         l.setItemChecked(position, true);
     }
 
     private static final String[] UI_BINDING_FROM = {
-            TutListDatabase.COL_TITLE, TutListDatabase.COL_DATE };
-    private static final int[] UI_BINDING_TO = { R.id.title, R.id.date };
+            TutListDatabase.COL_TITLE, TutListDatabase.COL_DATE,
+            TutListDatabase.COL_READ };
+    private static final int[] UI_BINDING_TO = { R.id.title, R.id.date,
+            R.id.title };
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        Log.d(DEBUG_TAG, "onCreate");
 
+    }
+
+    @Override
+    public void onActivityCreated(Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
         getLoaderManager().initLoader(TUTORIAL_LIST_LOADER, null, this);
 
         adapter = new SimpleCursorAdapter(
@@ -98,17 +134,60 @@ public class TutListFragment extends ListFragment implements
         adapter.setViewBinder(new TutorialViewBinder());
         setListAdapter(adapter);
         setHasOptionsMenu(true);
+        setEmptyText(getResources().getText(R.string.empty_list_label));
+        getListView().setChoiceMode(ListView.CHOICE_MODE_SINGLE);
+
+        if (savedInstanceState != null) {
+            lastItemClicked = savedInstanceState.getLong(LAST_ITEM_CLICKED_KEY,
+                    -1);
+            selectedPosition = savedInstanceState.getInt(LAST_POSITION_KEY, -1);
+            if (selectedPosition != -1) {
+                setSelection(selectedPosition);
+                getListView().smoothScrollToPosition(selectedPosition);
+                getListView().setItemChecked(selectedPosition, true);
+            }
+
+            curTutUrl = savedInstanceState.getString(CUR_TUT_URL_KEY);
+            if (curTutUrl != null) {
+                tutSelectedListener.onTutSelected(curTutUrl);
+            }
+        }
+    }
+
+    private boolean showReadFlag;
+
+    @Override
+    public void onPause() {
+        showReadFlag = TutListSharedPrefs.getOnlyUnreadFlag(getActivity());
+        Log.d(DEBUG_TAG, "onPause");
+        super.onPause();
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        Log.d(DEBUG_TAG, "onResume");
+        if (showReadFlag != TutListSharedPrefs.getOnlyUnreadFlag(getActivity())) {
+            getLoaderManager().restartLoader(TUTORIAL_LIST_LOADER, null, this);
+        }
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putLong(LAST_ITEM_CLICKED_KEY, lastItemClicked);
+        outState.putString(CUR_TUT_URL_KEY, curTutUrl);
+        outState.putInt(LAST_POSITION_KEY, selectedPosition);
+    }
+
+    @Override
+    public void onDestroy() {
+        Log.d(DEBUG_TAG, "onDestroy");
+        super.onDestroy();
     }
 
     public interface OnTutSelectedListener {
         public void onTutSelected(String tutUrl);
-    }
-
-    @Override
-    public void onActivityCreated(Bundle savedInstanceState) {
-        super.onActivityCreated(savedInstanceState);
-
-        getListView().setChoiceMode(ListView.CHOICE_MODE_SINGLE);
     }
 
     @Override
@@ -155,6 +234,10 @@ public class TutListFragment extends ListFragment implements
         case R.id.settings_option_item:
             getActivity().startActivity(item.getIntent());
             break;
+        case R.id.mark_all_read_item:
+            TutListProvider.markAllItemsRead(getActivity()
+                    .getApplicationContext());
+            break;
         }
         return true;
     }
@@ -164,7 +247,16 @@ public class TutListFragment extends ListFragment implements
 
         @Override
         public boolean setViewValue(View view, Cursor cursor, int index) {
-            if (index == cursor.getColumnIndex(TutListDatabase.COL_DATE)) {
+            if (index == cursor.getColumnIndex(TutListDatabase.COL_READ)) {
+                boolean read = cursor.getInt(index) > 0 ? true : false;
+                TextView title = (TextView) view;
+                if (!read) {
+                    title.setTypeface(Typeface.DEFAULT_BOLD, 0);
+                } else {
+                    title.setTypeface(Typeface.DEFAULT);
+                }
+                return true;
+            } else if (index == cursor.getColumnIndex(TutListDatabase.COL_DATE)) {
                 // get a locale based string for the date
                 DateFormat formatter = android.text.format.DateFormat
                         .getDateFormat(getActivity().getApplicationContext());
@@ -183,11 +275,15 @@ public class TutListFragment extends ListFragment implements
     @Override
     public Loader<Cursor> onCreateLoader(int id, Bundle args) {
         String[] projection = { TutListDatabase.ID, TutListDatabase.COL_TITLE,
-                TutListDatabase.COL_DATE };
+                TutListDatabase.COL_DATE, TutListDatabase.COL_READ };
 
         Uri content = TutListProvider.CONTENT_URI;
+        String selection = null;
+        if (TutListSharedPrefs.getOnlyUnreadFlag(getActivity())) {
+            selection = TutListDatabase.COL_READ + "='0'";
+        }
         CursorLoader cursorLoader = new CursorLoader(getActivity(), content,
-                projection, null, null, TutListDatabase.COL_DATE + " desc");
+                projection, selection, null, TutListDatabase.COL_DATE + " desc");
         return cursorLoader;
     }
 
