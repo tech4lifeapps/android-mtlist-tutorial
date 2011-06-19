@@ -36,4 +36,5 @@
         name="pref_key_only_unread">only_unread_flag</string>
     <string
         name="empty_list_label">You have no tutorials to read!</string>
+    <string name="appwidget_label">LATEST TUT:</string>
 </resources>

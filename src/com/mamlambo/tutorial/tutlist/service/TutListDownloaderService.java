@@ -46,6 +46,7 @@ import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
+import android.appwidget.AppWidgetManager;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
@@ -57,6 +58,7 @@ import com.mamlambo.tutorial.tutlist.R;
 import com.mamlambo.tutorial.tutlist.TutListActivity;
 import com.mamlambo.tutorial.tutlist.data.TutListDatabase;
 import com.mamlambo.tutorial.tutlist.data.TutListProvider;
+import com.mamlambo.tutorial.tutwidget.TutWidgetProvider;
 
 public class TutListDownloaderService extends Service {
 
@@ -211,6 +213,9 @@ public class TutListDownloaderService extends Service {
 
             notificationManager
                 .notify(LIST_UPDATE_NOTIFICATION, updateComplete);
+            
+            // also update widget
+            TutWidgetProvider.updateWidgetContent(context, AppWidgetManager.getInstance(context));
             
             // all done
             stopSelf();

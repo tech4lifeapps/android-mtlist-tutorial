@@ -3,8 +3,8 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.mamlambo.tutorial.tutlist"
     android:installLocation="auto"
-    android:versionName="1.5.91"
-    android:versionCode="12">
+    android:versionName="1.6.105"
+    android:versionCode="13">
     <uses-sdk
         android:minSdkVersion="4"
         android:targetSdkVersion="11" />
@@ -36,5 +36,15 @@
             android:name=".service.TutListDownloaderService"></service>
         <receiver
             android:name=".receiver.AlarmReceiver"></receiver>
+        <receiver
+            android:name="com.mamlambo.tutorial.tutwidget.TutWidgetProvider">
+            <intent-filter>
+                <action
+                    android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/tutlist_appwidget" />
+        </receiver>
     </application>
 </manifest>
